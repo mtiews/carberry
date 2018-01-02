@@ -1,3 +1,4 @@
+**WORK IN PROGRESS**
 
 # IoT POC
 
@@ -49,7 +50,11 @@ Create requirements list for Python: `pip3 freeze > requirements.txt`
 
 ### Install MQTT Broker mosquitto
 
-`sudo apt-get install -y mosquitto mosquitto-clients`
+Run the following command to install mosquitto: `sudo apt-get install -y mosquitto mosquitto-clients`
+
+After the installation the MQTT broker should be running.
+
+To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one terminal to subscribe to all topics. And in another terminal run `mosquitto_pub -t "greetings" -m "hello"`. After publishing the message `hello`should appear in the first terminal.
 
 ### Install Huawei e3372 LTE Stick
 
