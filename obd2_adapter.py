@@ -11,19 +11,19 @@ class OBD2Adapter:
             self._sensors_to_read = sensors_to_read
         else:
             self._sensors_to_read = [sensors_to_read]
-    
+   
     # TODO: Change to generator (yield)
     def read_sensors(self):
         print("{} - read_values".format(threading.current_thread().getName()))
         for sensor_name in self._sensors_to_read:
             yield self.read_sensor(sensor_name)
-    
+
     def read_sensor(self, sensor_name):
-        waitms = random.randrange(100,2000) / 1000
+        waitms = random.randrange(100, 2000) / 1000
         print("{} - read_sensor: {} (Sleep: {})".format(threading.current_thread().getName(), sensor_name, waitms))
         time.sleep(waitms)
         # throw random error
-        failed = random.randrange(0,2)
+        failed = random.randrange(0, 2)
         if failed == 1:
             return {
                 "source": "obd2",
@@ -32,14 +32,13 @@ class OBD2Adapter:
                 "error": "Something went wrong"
             }
         return {
-                "source": "obd2",
-                "sensor": sensor_name,
-                "value": waitms
-            }    
+            "source": "obd2",
+            "sensor": sensor_name,
+            "value": waitms
+        }
 
 if __name__ == "__main__":
     # only for testing
-    
     obd2 = OBD2Adapter("single")
     result = obd2.read_sensors()
     print("Result: {}".format(result))

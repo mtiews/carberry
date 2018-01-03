@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import json
 import logging
 import time
 
@@ -26,30 +25,31 @@ class PipelineLog(Observer):
     def __init__(self, pipeline_name):
         self._pipeline_name = pipeline_name
         self._logger = logging.getLogger(__name__)
-        
+
     def on_next(self, data):
         pass
-    
+
     def on_completed(self):
         pass
-    
+
     def on_error(self, error):
-        self._logger.error("Error in pipeline '{}': {}".format(self._pipeline_name, error))
+        self._logger.error("Error in pipeline '%s': %s", self._pipeline_name, error)
 
 class VehicleDataToMqtt:
     def __init__(self):
         self._logger = logging.getLogger(__name__)
-        
-        self._sink = MQTTSink(clientid = MQTT_CLIENT_NAME, topic_prefix = MQTT_TOPIC_PREFIX)
+
+        self._sink = MQTTSink(clientid=MQTT_CLIENT_NAME, topic_prefix=MQTT_TOPIC_PREFIX)
 
         self._obd2 = None
         self._obd2_subscription = None
         self._gps = None
-        self._gps_subscription = None      
+        self._gps_subscription = None
 
         self._init_pipelines()
 
-    def initialize(self): 
+    def initialize(self):
+        self._logger.info("Initializing MQTT and Pipelines")
         self._sink.initialize()
         self._init_pipelines()
 
@@ -66,7 +66,7 @@ class VehicleDataToMqtt:
                 .do_action(PipelineLog('obd2')) \
                 .retry() \
                 .subscribe(self._sink)
-        
+
         # GPS
         self._gps = GPSAdapter()
         self._obd2_subscription = \
@@ -77,17 +77,17 @@ class VehicleDataToMqtt:
             .subscribe(self._sink)
 
 if __name__ == "__main__":
-    logging.basicConfig(level = logging.DEBUG, format = "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
-    
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
+
     logger = logging.getLogger("CARBERRY")
     logger.info("Starting module...")
-    
+
     vdtm = VehicleDataToMqtt()
     vdtm.initialize()
 
     while 1:
         vdtm.heartbeat()
-        time.sleep(HEARTBEAT_INTERVAL/1000)   
-    
+        time.sleep(HEARTBEAT_INTERVAL/1000)
+
     logger.info("...done")
     
