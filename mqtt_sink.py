@@ -79,7 +79,7 @@ class MQTTSink(Observer):
         pass
 
     def on_error(self, error):
-        self._logger.info("Observer error received: {0}".format(error))
+        self._logger.info("Observer error received: %s", error)
 
 if __name__ == "__main__":
     # only for testing

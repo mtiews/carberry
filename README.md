@@ -36,31 +36,7 @@ Used software:
 
 ![Overview](diagrams/overview.png "Overview")
 
-
-## Setting Up MacOS for local development
-
-### MQTT - on MacOS
-Install mosquitto via Homebrew: `brew install mosquitto`
-
-Run locally installed mosquitto: `/usr/local/sbin/mosquitto -c /usr/local/etc/mosquitto/mosquitto.conf`
-
-Listen for all messages: ``mosquitto_sub -t "#"``
-
-### Misc
-
-Tunnel/SOCKS Proxy via ssh: `ssh -D 3333 user@host`
-
-Create requirements list for Python: `pip3 freeze > requirements.txt`
-
 ## Carberry - Setting Up Raspberry
-
-### Install MQTT Broker mosquitto
-
-Run the following command to install mosquitto: `sudo apt-get install -y mosquitto mosquitto-clients`
-
-After the installation the MQTT broker should be running.
-
-To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one terminal to subscribe to all topics. And in another terminal run `mosquitto_pub -t "greetings" -m "hello"`. After publishing the message `hello`should appear in the first terminal.
 
 ### Install Huawei e3372 LTE Stick
 
@@ -98,6 +74,14 @@ Now the serial port can be configured (https://bbs.archlinux.org/viewtopic.php?i
 *Should display `rfcomm0`*
     
 ### Test OBD2 Bluetooth Dongle
+
+### Install MQTT Broker mosquitto
+
+Run the following command to install mosquitto: `sudo apt-get install -y mosquitto mosquitto-clients`
+
+After the installation the MQTT broker should be running.
+
+To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one terminal to subscribe to all topics. And in another terminal run `mosquitto_pub -t "greetings" -m "hello"`. After publishing the message `hello`should appear in the first terminal.
 
 ## Install Carberry application software
 
@@ -141,3 +125,23 @@ WantedBy=multi-user.target
 Log outputs are written to `/var/log/syslog`.
 
 To view the logs run `sudo journalctl -u carberry` or `sudo journalctl -f -u carberry` to follow the logs.
+
+## Misc
+
+### MQTT on MacOS
+Install mosquitto via Homebrew: `brew install mosquitto`
+
+Run locally installed mosquitto: `/usr/local/sbin/mosquitto -c /usr/local/etc/mosquitto/mosquitto.conf`
+
+Listen for all messages: ``mosquitto_sub -t "#"``
+
+### Drawings
+
+https://www.draw.io/
+
+### Commands
+
+Tunnel/SOCKS Proxy via ssh: `ssh -D 3333 user@host`
+
+Create requirements list for Python: `pip3 freeze > requirements.txt`
+
