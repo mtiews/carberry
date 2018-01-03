@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 import logging
 import datetime
@@ -11,12 +13,16 @@ class MQTTSink(Observer):
         self._host = host
         self._port = port
         self._clientid = clientid
+        self._heartbeat_topic = topic_prefix + "/heartbeat"
         self._status_topic = topic_prefix + "/status"
         self._data_topic = topic_prefix + "/data"
         self._mqtt_client = None
     
     def initialize(self):
         self._init_mqttclient()
+
+    def heartbeat(self):
+        self._mqtt_client.publish(topic = self._heartbeat_topic, payload = json.dumps({ "timestamp": datetime.datetime.utcnow().isoformat()}), qos = 1, retain = False)
 
     def __del__(self):
         self._uninit_mqttclient()
@@ -30,7 +36,7 @@ class MQTTSink(Observer):
         def on_connect(mqttc, obj, flags, rc):
             if rc == 0:
                 self._logger.info("Connection result '{}' ".format( mqtt.connack_string(rc) ))
-                self._mqtt_client.publish(topic=self._status_topic, payload=json.dumps(self._create_status_message("online")), qos=1, retain=False)
+                self._mqtt_client.publish(topic = self._status_topic, payload = json.dumps(self._create_status_message("online")), qos = 1, retain = False)
                 return
             self._logger.error("Connection result '{}': {}".format( str(rc), mqtt.connack_string(rc) ))
 
@@ -39,7 +45,7 @@ class MQTTSink(Observer):
                 self._logger.warning("Unexpected MQTT disconnection. Will auto-reconnect")
         
         self._mqtt_client = mqtt.Client(self._clientid)
-        self._mqtt_client.will_set(self._status_topic, payload=json.dumps(self._create_status_message("offline")), qos=0, retain=False)
+        self._mqtt_client.will_set(self._status_topic, payload = json.dumps(self._create_status_message("offline")), qos = 1, retain = False)
         self._mqtt_client.on_connect = on_connect
         self._mqtt_client.on_disconnect = on_disconnect
         self._mqtt_client.connect_async(self._host, self._port, 60)
@@ -49,7 +55,7 @@ class MQTTSink(Observer):
         self._logger.info("Disconnecting MQTT")
         if self._mqtt_client == None:
             return
-        self._mqtt_client.publish(topic=self._status_topic, payload=json.dumps(self._create_status_message("offline")), qos=1, retain=False)
+        self._mqtt_client.publish(topic = self._status_topic, payload = json.dumps(self._create_status_message("offline")), qos = 1, retain = False)
         self._mqtt_client.loop_stop()
         self._mqtt_client.disconnect()
 
@@ -58,7 +64,7 @@ class MQTTSink(Observer):
             raise Exception("Client not initialized. Call initialize() before submitting data")
         payload = json.dumps(data)
         self._logger.debug("Submitting value '{}' to '{}'".format(data, self._data_topic))
-        self._mqtt_client.publish(topic=self._data_topic, payload=json.dumps(data), qos=1, retain=False)
+        self._mqtt_client.publish(topic = self._data_topic, payload = json.dumps(data), qos = 1, retain = False)
     
     def _create_status_message(self, status_text): 
         return { 
@@ -85,14 +91,17 @@ if __name__ == "__main__":
     logger = logging.getLogger('mqttsink_main')
     logger.info("Starting module...")
     
-    observer = MQTTSink(clientid="mqttsink_test",topic_prefix="mqttsink_test")
+    observer = MQTTSink(clientid = "mqttsink_test",topic_prefix = "mqttsink_test")
     observer.initialize()
+    observer.heartbeat()
 
     observer.on_next({"sensor": "sensor1", "value": 1000 })
     observer.on_next({"sensor": "sensor1", "value": 1000 })
     observer.on_completed()
     observer.on_error("Something went wrong")
 
-    time.sleep(60)
+    observer.heartbeat()
+    
+    time.sleep(10)
 
     logger.info("...done")

@@ -20,7 +20,8 @@ Used hardware:
 
 Used software: 
 * Vehicle
-    * Python
+    * Raspberry Pi 3 with jessie
+    * Python 3.4.2
         * paho-mqtt
         * RxPy
         * [Python OBD2 module]
@@ -30,6 +31,11 @@ Used software:
     * AWS IoT Core, Rules
     * AWS Firehose
     * ...
+
+### Overview
+
+![Overview](diagrams/overview.png "Overview")
+
 
 ## Setting Up MacOS for local development
 
@@ -83,7 +89,7 @@ Start `bluetoothctl`, and enter the following commands:
 6. connect [MAC-Adresse]
 *After that you should see a NotAvailable error message*
 7. info [MAC-Adresse]
-Will display a `connected: no`s
+Will display a `connected: no`
 
 Now the serial port can be configured (https://bbs.archlinux.org/viewtopic.php?id=178011):
 1. sudo modprobe rfcomm
@@ -91,5 +97,9 @@ Now the serial port can be configured (https://bbs.archlinux.org/viewtopic.php?i
 3. ls /dev |grep rfcomm
 *Should display `rfcomm0`*
     
-## Test OBD2 Bluetooth Dongle
+### Test OBD2 Bluetooth Dongle
 
+## Install this application 
+
+1. Install Python3: `sudo apt-get install python3 python3-pip`
+2. Clone this repository: `git clone https://github.com/mtiews/carberry.git`

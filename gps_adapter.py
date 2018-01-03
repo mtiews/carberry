@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import random
 import threading
@@ -29,6 +31,8 @@ class GPSAdapter:
         
 
 if __name__ == "__main__":
+    # only for testing
+    
     gps = GPSAdapter()
     result = gps.read_gps()
     print("Result: {}".format(result))

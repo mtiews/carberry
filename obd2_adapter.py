@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 import random
 import threading
@@ -36,6 +38,8 @@ class OBD2Adapter:
             }    
 
 if __name__ == "__main__":
+    # only for testing
+    
     obd2 = OBD2Adapter("single")
     result = obd2.read_sensors()
     print("Result: {}".format(result))

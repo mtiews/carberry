@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 import logging
 import time
@@ -16,6 +18,7 @@ MQTT_TOPIC_PREFIX = MQTT_CLIENT_NAME
 
 # Configuration values - potentially from remote configuration
 OBD2_SENSORS = ["sensor1", "sensor2", "sensor3"]
+HEARTBEAT_INTERVAL = 300 * 1000
 OBD2_POLL_INTERVAL = 1000
 GPS_POLL_INTERVAL = 2 * 1000
 
@@ -33,7 +36,7 @@ class PipelineLog(Observer):
     def on_error(self, error):
         self._logger.error("Error in pipeline '{}': {}".format(self._pipeline_name, error))
 
-class CarDataToMqtt:
+class VehicleDataToMqtt:
     def __init__(self):
         self._logger = logging.getLogger(__name__)
         
@@ -49,6 +52,9 @@ class CarDataToMqtt:
     def initialize(self): 
         self._sink.initialize()
         self._init_pipelines()
+
+    def heartbeat(self):
+        self._sink.heartbeat()
 
     def _init_pipelines(self):
         # OBD2
@@ -73,14 +79,15 @@ class CarDataToMqtt:
 if __name__ == "__main__":
     logging.basicConfig(level = logging.DEBUG, format = "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
     
-    logger = logging.getLogger("carberry")
+    logger = logging.getLogger("CARBERRY")
     logger.info("Starting module...")
     
-    datatransfer = CarDataToMqtt()
-    datatransfer.initialize()
+    vdtm = VehicleDataToMqtt()
+    vdtm.initialize()
 
     while 1:
-        time.sleep(10)   
+        vdtm.heartbeat()
+        time.sleep(HEARTBEAT_INTERVAL/1000)   
     
     logger.info("...done")
     
