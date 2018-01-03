@@ -1,8 +1,8 @@
 **WORK IN PROGRESS**
 
-# IoT POC
+# IoT - PoC to collect data from a vehicle
 
-Idea: Reliably collect and transfer data from a vehicle using cheap consumer electronics and standard technologies. Serving important data in real time and running data analytics on collected data.
+Idea: Collect and transfer data from a vehicle using cheap consumer electronics and standard technologies.
 
 Motivation: Proof concept and getting in touch with new technologies and concepts.
 
@@ -26,13 +26,27 @@ Used software:
         * RxPy
         * [Python OBD2 module]
         * [Python GPS module]
-    * mosquitto (MQTT broker)
+    * Mosquitto (MQTT broker)
 * Stationary
     * AWS IoT Core, Rules
     * AWS Firehose
     * ...
 
-### Overview
+## Architecture - Overview
+
+Data is collected on the vehicle, using an OBD2 Bluetooth Dongle, a GPS USB Dongle and an LTE USB Stick to connect to the internet. All devices are managed by a Raspberry Pi 3, running Python 3 and mosquitto as MQTT broker.
+
+To close the gap to the stationary side, a bridge in Mosquitto is configured, which transfers the data to AWS IoT Core. In AWS the data is streamed to AWS S3 via AWS Kinesis Firehose.
+
+Further processing is done in AWS using AWS Athena and AWS Quicksight. 
+
+General constraints:
+* Secure communication from the vehicle to the stationary side (MQTT via HTTPS)
+* No vendor specific protocols between vehicle and stationary side, to keep both sides exchangeable
+    * Consequence: Use AWS IoT Core, WITHOUT using the Thing Shadows functionalities of AWS
+* Use a well known structured data format for data exchange (JSON)
+* Buffer messages on the vehicle side, when the internet connection is down
+* ...
 
 ![Overview](diagrams/overview.png "Overview")
 
@@ -83,9 +97,55 @@ After the installation the MQTT broker should be running.
 
 To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one terminal to subscribe to all topics. And in another terminal run `mosquitto_pub -t "greetings" -m "hello"`. After publishing the message `hello`should appear in the first terminal.
 
-## Install Carberry application software
+UPDATE: It looks like Raspian jessie references a very old version of mosquitto, which does not support the latest MQTT protocol (3.1.1) required for AWS IoT. 
+So an update is required, see description at http://agilerule.blogspot.de/2016/05/install-mqtt-mosquitto-on-raspberry-pi.html.
 
-### Installation steps
+Steps:
+1. `sudo wget http://repo.mosquitto.org/debian/mosquitto-repo.gpg.key`
+2. `sudo apt-key add mosquitto-repo.gpg.key`
+3. `cd /etc/apt/sources.list.d/`
+4. `sudo wget http://repo.mosquitto.org/debian/mosquitto-jessie.list`
+5. `sudo apt-get update`
+6. `sudo apt-get install mosquitto mosquitto-clients`
+
+### Bridge mosquitto to AWS IoT Core
+
+A detailed description can be found here: https://aws.amazon.com/de/blogs/iot/how-to-bridge-mosquitto-mqtt-broker-to-aws-iot/
+
+The basic steps are:
+1. In AWS IoT create a Thing with certificate and keys, attach a policy to allow the Thing to connect and publish to AWS IoT.
+2. Download certificate and keys (incl. Root Certificate) and copy them to the Raspberry Pi.
+3. Ensure, that in AWS IoT the certificate is activated (by default the certifcates are deactivated after initial creation)
+4. Create a Mosquitto bridge configuration `/etc/mosquitto/conf.d/bridge.conf`, like so:
+```
+# AWS IoT endpoint, use AWS CLI 'aws iot describe-endpoint'
+connection awsiot
+address XXXXXXXXXX.iot.eu-central-1.amazonaws.com:8883
+
+# map local carberry to source specific topic in AWS IoT
+topic # out 1 carberry/ carberry/passat/
+
+# Setting protocol version explicitly
+bridge_protocol_version mqttv311
+bridge_insecure false
+
+# Bridge connection name and MQTT client Id,
+# enabling the connection automatically when the broker starts.
+cleansession true
+clientid cbpassat
+start_type automatic
+notifications false
+log_type all
+
+#Path to the rootCA, Certificate and Private key
+bridge_cafile /etc/mosquitto/certs/rootCA.crt
+bridge_certfile /etc/mosquitto/certs/certificate.pem.crt
+bridge_keyfile /etc/mosquitto/certs/private.pem.key
+```
+
+### Install Carberry application software
+
+#### Installation steps
 
 1. Install Python3: `sudo apt-get install python3 python3-pip`
 2. Install git: `sudo apt-get install git`
@@ -94,7 +154,7 @@ To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one termi
 4. Change into cloned directory: `cd carberry`
 5. Install required Python libraries: `sudo pip3 install -r requirements.txt`
 
-### Run Carberry as service using systemd
+#### Run Carberry as service using systemd
 
 1. Create a user: `sudo useradd -r -s /bin/false carberry`
 2. Create a config file for systemd: `sudo nano /etc/systemd/system/carberry.service`

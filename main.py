@@ -38,20 +38,21 @@ class PipelineLog(Observer):
 class VehicleDataToMqtt:
     def __init__(self):
         self._logger = logging.getLogger(__name__)
-
         self._sink = MQTTSink(clientid=MQTT_CLIENT_NAME, topic_prefix=MQTT_TOPIC_PREFIX)
-
         self._obd2 = None
         self._obd2_subscription = None
         self._gps = None
         self._gps_subscription = None
-
-        self._init_pipelines()
+        self._initialized = False
 
     def initialize(self):
+        if self._initialized:
+            self._logger.info("Already initialized, nothing to do")
+            return
         self._logger.info("Initializing MQTT and Pipelines")
         self._sink.initialize()
         self._init_pipelines()
+        self._initialized = True
 
     def heartbeat(self):
         self._sink.heartbeat()
