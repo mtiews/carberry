@@ -2,6 +2,7 @@
 
 import json
 import logging
+import time
 import datetime
 import paho.mqtt.client as mqtt
 from rx import Observer
@@ -70,9 +71,11 @@ class MQTTSink(Observer):
         self._mqtt_client.publish(topic=self._data_topic, payload=payload, qos=1, retain=False)
 
     def _create_status_message(self, status_text):
+        currentmillis = int(round(time.time() * 1000))
         return {
             "status": status_text,
-            "timestamp": datetime.datetime.utcnow().isoformat()
+            "timestamp": currentmillis, 
+            "timestamp_str": datetime.datetime.utcfromtimestamp(currentmillis/1000).isoformat()
         }
 
     def on_next(self, value):

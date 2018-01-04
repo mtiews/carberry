@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import time
+import datetime
 import random
 import threading
 
@@ -21,18 +22,24 @@ class OBD2Adapter:
         waitms = random.randrange(100, 2000) / 1000
         time.sleep(waitms)
         # throw random error
+        timestamp = int(round(time.time() * 1000))
+        timestamp_str = datetime.datetime.utcfromtimestamp(timestamp/1000).isoformat()
         failed = random.randrange(0, 2)
         if failed == 1:
             return {
                 "source": "obd2",
                 "sensor": sensor_name,
                 "value": None,
-                "error": "Something went wrong"
+                "error": "Something went wrong",
+                "timestamp": timestamp,
+                "timestamp_str": timestamp_str
             }
         return {
             "source": "obd2",
             "sensor": sensor_name,
-            "value": waitms
+            "value": waitms,
+            "timestamp": timestamp,
+            "timestamp_str": timestamp_str
         }
 
 if __name__ == "__main__":
