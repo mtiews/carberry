@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     # Initialize dependencies
     sink = MQTTSink(clientid=MQTT_CLIENT_NAME, topic_prefix=MQTT_TOPIC_PREFIX)
-    sink.initialize()
+    sink.start()
     obd2 = OBD2Adapter(configuration=CONFIGURATION_IN_USE["obd2"])
     gps = GPSAdapter(configuration=CONFIGURATION_IN_USE["gps"])
 
