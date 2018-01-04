@@ -41,7 +41,7 @@ To close the gap to the stationary side, a bridge in Mosquitto is configured, wh
 Further processing is done in AWS using AWS Athena and AWS Quicksight. 
 
 General constraints:
-* Secure communication from the vehicle to the stationary side (MQTT via HTTPS)
+* Secure communication from the vehicle to the stationary side (MQTT secured via X509 certificates)
 * No vendor specific protocols between vehicle and stationary side, to keep both sides exchangeable
     * Consequence: Use AWS IoT Core, WITHOUT using the Thing Shadows functionalities of AWS
 * Use a well known structured data format for data exchange (JSON)
@@ -89,9 +89,9 @@ Now the serial port can be configured (https://bbs.archlinux.org/viewtopic.php?i
     
 ### Test OBD2 Bluetooth Dongle
 
-### Install MQTT Broker mosquitto
+### Install MQTT Broker Mosquitto
 
-Run the following command to install mosquitto: `sudo apt-get install -y mosquitto mosquitto-clients`
+Run the following command to install Mosquitto: `sudo apt-get install -y mosquitto mosquitto-clients`
 
 After the installation the MQTT broker should be running.
 

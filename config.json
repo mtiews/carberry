@@ -1,0 +1,18 @@
+{
+    "config_info": "Configuration from config.json",
+    "general" : {
+        "heartbeat_interval": 300,
+        "obd2_poll_interval": 60,
+        "gps_poll_interval": 60
+    },
+    "obd2": {
+        "sensors": [ 
+            "sensor1",
+            "sensor2",
+            "sensor3",
+            "sensor4"
+        ]
+    },
+    "gps": {
+    }
+}

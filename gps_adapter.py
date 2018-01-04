@@ -6,7 +6,7 @@ import threading
 
 class GPSAdapter:
 
-    def __init__(self):
+    def __init__(self, *, configuration):
         pass
 
     def read_gps(self):
@@ -31,6 +31,6 @@ class GPSAdapter:
 
 if __name__ == "__main__":
     # only for testing
-    gps = GPSAdapter()
+    gps = GPSAdapter(configuration={})
     result = gps.read_gps()
     print("Result: {}".format(result))

@@ -6,11 +6,11 @@ import threading
 
 class OBD2Adapter:
 
-    def __init__(self, sensors_to_read):
-        if isinstance(sensors_to_read, list):
-            self._sensors_to_read = sensors_to_read
+    def __init__(self, *, configuration):
+        if isinstance(configuration["sensors"], list):
+            self._sensors_to_read = configuration["sensors"]
         else:
-            self._sensors_to_read = [sensors_to_read]
+            self._sensors_to_read = [configuration["sensors"]]
 
     def read_sensors(self):
         print("{} - read_values".format(threading.current_thread().getName()))
@@ -37,10 +37,10 @@ class OBD2Adapter:
 
 if __name__ == "__main__":
     # only for testing
-    obd2 = OBD2Adapter("single")
-    result = obd2.read_sensors()
-    print("Result: {}".format(result))
+    obd2 = OBD2Adapter(configuration={"sensors": "single"})
+    for s in obd2.read_sensors():
+        print("Sensordata: {}".format(s))
 
-    obd2 = OBD2Adapter(["list1", "list2", "list3"])
-    result = obd2.read_sensors()
-    print("Result: {}".format(result))
+    obd2 = OBD2Adapter(configuration={"sensors": ["list1", "list2", "list3"]})
+    for s in obd2.read_sensors():
+        print("Sensordata: {}".format(s))
