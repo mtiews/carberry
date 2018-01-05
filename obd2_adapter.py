@@ -33,6 +33,7 @@ class OBD2Adapter:
             self._connection = obd.OBD()
         if self._connection.is_connected() is not True:
             self._logger.error("Failed to connect to OBD2")
+            self._connection.close()
             self._connection = None
             return False
         else:
