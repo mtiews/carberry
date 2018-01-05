@@ -35,10 +35,9 @@ DEFAULT_CONFIGURATION = {
     # Settings for OBD2 adapter - used for class OBD2Adapter
     "obd2": {
         "sensors": [ 
-            "sensor1",
-            "sensor2",
-            "sensor3",
-            "sensor4"
+            "STATUS",
+            "RPM",
+            "SPEED"
         ]
     },
     # Settings for GPS adapter - used for class GPSAdapter
@@ -89,7 +88,6 @@ if __name__ == "__main__":
 
     # Initialize dependencies
     sink = MQTTSink(clientid=MQTT_CLIENT_NAME, topic_prefix=MQTT_TOPIC_PREFIX)
-    sink.start()
     obd2 = OBD2Adapter(configuration=CONFIGURATION_IN_USE["obd2"])
     gps = GPSAdapter(configuration=CONFIGURATION_IN_USE["gps"])
 

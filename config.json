@@ -7,10 +7,9 @@
     },
     "obd2": {
         "sensors": [ 
-            "sensor1",
-            "sensor2",
-            "sensor3",
-            "sensor4"
+            "STATUS",
+            "RPM",
+            "SPEED"
         ]
     },
     "gps": {

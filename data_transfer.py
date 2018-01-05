@@ -32,14 +32,14 @@ class DataTransfer:
 
     def start(self, *, configuration):
         self._start_pipelines(configuration)
-        
+
     def stop(self):
         self._stop_pipelines()
-    
+
     def _start_pipelines(self, configuration):
         if self._initialized == True:
             return
-        
+
         self._logger.info("Starting Pipelines")
         # Heartbeat
         self._heartbeat_subscription = \

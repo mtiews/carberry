@@ -15,18 +15,18 @@ Used technologies:
 Used hardware:
 * Raspberry Pi 3
 * Huawei e3372 LTE USB Stick
-* Exza HHOBD Bluetooth Dongle
+* Exza HHOBD Bluetooth Dongle (ELM327 compatible)
 * [GPS Receiver]
 
 Used software: 
 * Vehicle
     * Raspberry Pi 3 with jessie
     * Python 3.4.2
-        * paho-mqtt
-        * RxPy
-        * [Python OBD2 module]
-        * [Python GPS module]
-    * Mosquitto (MQTT broker)
+        * [paho-mqtt](https://pypi.python.org/pypi/paho-mqtt/1.3.1)
+        * [RxPy](https://github.com/ReactiveX/RxPY)
+        * [Python obd](http://python-obd.readthedocs.io/en/latest/)
+        * [TBD: Python GPS module]
+    * [Mosquitto (MQTT broker)](https://mosquitto.org/)
 * Stationary
     * AWS IoT Core, Rules
     * AWS Firehose
@@ -81,13 +81,53 @@ Start `bluetoothctl`, and enter the following commands:
 7. info [MAC-Adresse]
 Will display a `connected: no`
 
-Now the serial port can be configured (https://bbs.archlinux.org/viewtopic.php?id=178011):
-1. sudo modprobe rfcomm
-2. sudo rfcomm bind rfcomm0 [MAC-Adresse]
-3. ls /dev |grep rfcomm
-*Should display `rfcomm0`*
-    
+Using the previous steps, should automatically reconnect the Bluetooth Dongle after reboot.
+
+Now the serial port can be configured: (https://bbs.archlinux.org/viewtopic.php?id=178011):
+1. `sudo modprobe rfcomm`
+2. `sudo rfcomm bind rfcomm0 [MAC-Adresse]`
+3. `ls /dev |grep rfcomm` should display `rfcomm0`
+
+Add the following line to `/etc/rc.local`:
+```
+`sudo rfcomm bind rfcomm0 [MAC-Adresse] &`
+```
+to enable the serial port automatically during startup.
+Not nice, but all other solutions didn't work. :-(
+
 ### Test OBD2 Bluetooth Dongle
+
+Install screen `sudo apt-get install screen`
+Run `screen /dev/rfcomm0` to communicate with the OBD2 Adapter
+
+Run the following sequence in screen:
+
+`ATZ`
+Restarts the device. You’ll need to do this from time to time.
+
+`ATL1`
+Turns linefeeds on
+
+`ATH1`
+Turns headers on
+
+`ATS1`
+Turns spaces on
+
+`ATSP0`
+Set the protocol to Auto
+
+`ATI` 
+Show information about the device (ELM 327 plus version information)
+
+`03`
+Shows the current error codes
+
+You can press CTRL+A, CTRL+D to exit screen
+
+Detailed information about OBD-II can be found at Wikipedia: https://en.wikipedia.org/wiki/OBD-II_PIDs
+
+The ELM327 can speak **CAN** as well, but that's another story. 
 
 ### Install MQTT Broker Mosquitto
 
@@ -205,3 +245,12 @@ Tunnel/SOCKS Proxy via ssh: `ssh -D 3333 user@host`
 
 Create requirements list for Python: `pip3 freeze > requirements.txt`
 
+### WIFI on Raspberry Pi 3
+
+Edit `wpa_supplicant.conf` via `sudo nano /etc/wpa_supplicant/wpa_supplicant.conf` and add your settings:
+```
+network={
+    ssid="NetworkName"
+    psk="YourSecretPassword"
+}
+```

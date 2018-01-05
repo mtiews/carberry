@@ -18,24 +18,21 @@ class MQTTSink(Observer):
         self._data_topic = topic_prefix + "/data"
         self._mqtt_client = None
 
-    def start(self):
-        self._init_mqttclient()
+    def __del__(self):
+        self.dispose()
 
-    def stop(self):
+    def dispose(self):
         self._uninit_mqttclient()
 
     def heartbeat(self):
+        self._ensure_connected()
         self._mqtt_client.publish(topic=self._heartbeat_topic, payload=json.dumps({"timestamp": datetime.datetime.utcnow().isoformat()}), qos=1, retain=False)
 
-    def __del__(self):
-        self._uninit_mqttclient()
-
-    def _init_mqttclient(self):
-        self._logger.info("Initializing MQTT Connection")
+    def _ensure_connected(self):
         if self._mqtt_client != None:
-            self._logger.info("Client already initialized, nothing to do")
             return
-
+        self._logger.info("Initializing MQTT Connection")
+        
         def on_connect(mqttc, obj, flags, rc):
             if rc == 0:
                 self._logger.info("Connection result '%s' ", mqtt.connack_string(rc))
@@ -64,8 +61,7 @@ class MQTTSink(Observer):
         self._mqtt_client = None
 
     def _submit(self, data):
-        if self._mqtt_client is None:
-            raise Exception("Client not initialized. Call initialize() before submitting data")
+        self._ensure_connected()
         payload = json.dumps(data)
         self._logger.debug("Submitting value '%s' to '%s'", payload, self._data_topic)
         self._mqtt_client.publish(topic=self._data_topic, payload=payload, qos=1, retain=False)
@@ -92,15 +88,14 @@ if __name__ == "__main__":
     import time
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
 
-    observer = MQTTSink(clientid="mqttsink_test", topic_prefix="mqttsink_test")
-    observer.initialize()
-    observer.heartbeat()
+    sink = MQTTSink(clientid="mqttsink_test", topic_prefix="mqttsink_test")
+    sink.heartbeat()
 
-    observer.on_next({"sensor": "sensor1", "value": 1000})
-    observer.on_next({"sensor": "sensor1", "value": 1000})
-    observer.on_completed()
-    observer.on_error("Something went wrong")
-    observer.heartbeat()
+    sink.on_next({"sensor": "sensor1", "value": 1000})
+    sink.on_next({"sensor": "sensor1", "value": 1000})
+    sink.on_completed()
+    sink.on_error("Something went wrong")
+    sink.heartbeat()
 
     time.sleep(3)
-    observer.stop()
+    sink.dispose()
