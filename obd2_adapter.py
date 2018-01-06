@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import random
 import threading
 import time
 
@@ -49,17 +48,26 @@ class OBD2Adapter:
             if self._ensure_connected() is not True:
                 return self._create_sensor_data_message(sensor_name=sensor_name, error="OBD2 not connected")
             result = self._connection.query(obd.commands[sensor_name])
-            return self._create_sensor_data_message(sensor_name=sensor_name, value=result.value)
+            svalue = None
+            sunit = None
+            if not result.is_null():
+                try:
+                    svalue = result.value.magnitude
+                    sunit = result.value.unit
+                except AttributeError:
+                    svalue = str(result.value)
+            return self._create_sensor_data_message(sensor_name=sensor_name, value=svalue, unit=sunit)
         except Exception as ex:
             return self._create_sensor_data_message(sensor_name=sensor_name, error=str(ex))
 
-    def _create_sensor_data_message(self, *, sensor_name, value=None, error=None):
+    def _create_sensor_data_message(self, *, sensor_name, value=None, unit=None, error=None):
         timestamp = int(round(time.time() * 1000))
         timestamp_str = datetime.datetime.utcfromtimestamp(timestamp/1000).isoformat()
         return {
             "source": "obd2",
             "sensor": sensor_name,
             "value": value,
+            "unit": unit,
             "timestamp": timestamp,
             "timestamp_str": timestamp_str,
             "error": error

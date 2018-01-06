@@ -6,8 +6,9 @@
         "gps_poll_interval": 60
     },
     "obd2": {
-        "sensors": [ 
-            "STATUS",
+        "sensors": [
+            "ELM_VOLTAGE",
+            "OIL_TEMP",
             "RPM",
             "SPEED"
         ]

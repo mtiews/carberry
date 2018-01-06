@@ -50,7 +50,32 @@ General constraints:
 
 ![Overview](diagrams/overview.png "Overview")
 
-## Carberry - Setting Up Raspberry
+## Carberry Application
+
+### What does it do?
+
+Basic functionality:
+* The application is reading the connected OBD2 adapter on a configurable interval, for a configurable list of OBD2 values and submits the data to the locally installed MQTT Broker (mosquitto)
+* The application is reading the connected GPS receiver on a configurable interval for the current GPS position and submits the data to the locally installed MQTT Broker
+* On a configurable interval the application submits a heartbeat message to the local broker
+* the application submits a "online" status message when its connected to the local broker and via MQTT's Last Will and Testament feature an "offline" status 
+
+### How does it work?
+
+#### OBD2 
+The application is using the [Python obd](http://python-obd.readthedocs.io/en/latest/) internally, to read data from OBD2. The Pyton obd library is automatically searching for a proper serial device to connect to. Because of this there is no configuration for a serial device required.
+
+The Python obd library is using Pint's Quantity implementation for most return values. The Carberry application extracts value and unit if a Pint Quantity is used, otherwise the values returned by the Python obd library are currently just converted to strings. 
+
+### Configuration
+
+The configuration can be found in the file `config.json`. 
+
+A description of the configuration (represented as Pyhton data structure) can be found in the file `main.py` searching for the variable `DEFAULT_CONFIGURATION`. This configuration will also be applied by default, if the `config.json` can't be read for some reason.
+
+The application logs the current configuration it is using during startup.
+
+## Carberry - Setting Up Raspberry Pi 3
 
 ### Install Huawei e3372 LTE Stick
 
@@ -193,6 +218,9 @@ bridge_keyfile /etc/mosquitto/certs/private.pem.key
 3. Clone this repository: `git clone https://github.com/mtiews/carberry.git`
 4. Change into cloned directory: `cd carberry`
 5. Install required Python libraries: `sudo pip3 install -r requirements.txt`
+6. Check the configuration file `config.json` and change it according to your needs (e.g. change intervals and sensors to read from OBD2)
+
+After these steps the application can be started via `python3 main.py`, to check whether it is working properly. Have a look at your local mosquitto via `mosquitto_sub -t "#"` and check if all data is submitted properly.
 
 #### Run Carberry as service using systemd
 

@@ -35,7 +35,8 @@ DEFAULT_CONFIGURATION = {
     # Settings for OBD2 adapter - used for class OBD2Adapter
     "obd2": {
         "sensors": [ 
-            "STATUS",
+            "ELM_VOLTAGE",
+            "OIL_TEMP",
             "RPM",
             "SPEED"
         ]
