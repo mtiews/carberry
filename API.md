@@ -26,7 +26,8 @@ Sample message:
 ```
 {
     "status": "online", 
-    "status_text": "Application bootstrapped successfully.", "timestamp": 1515254387767, 
+    "status_text": "Application bootstrapped successfully.", 
+    "timestamp": 1515254387767, 
     "timestamp_str": "2018-01-06T15:59:47.767000"
 }
 ```
