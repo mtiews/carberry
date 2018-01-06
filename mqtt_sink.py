@@ -28,6 +28,18 @@ class MQTTSink(Observer):
         self._ensure_connected()
         self._mqtt_client.publish(topic=self._heartbeat_topic, payload=json.dumps({"timestamp": datetime.datetime.utcnow().isoformat()}), qos=1, retain=False)
 
+    def submit_data(self, data):
+        self._ensure_connected()
+        payload = json.dumps(data)
+        self._logger.debug("Submitting data '%s' to '%s'", payload, self._data_topic)
+        self._mqtt_client.publish(topic=self._data_topic, payload=payload, qos=1, retain=False)
+
+    def submit_status(self, *, status, status_text=None):
+        self._ensure_connected()
+        payload = json.dumps(self._create_status_message(status=status, status_text=status_text))
+        self._logger.debug("Submitting status '%s' to '%s'", payload, self._data_topic)
+        self._mqtt_client.publish(topic=self._status_topic, payload=payload, qos=1, retain=False)
+
     def _ensure_connected(self):
         if self._mqtt_client != None:
             return
@@ -36,7 +48,6 @@ class MQTTSink(Observer):
         def on_connect(mqttc, obj, flags, rc):
             if rc == 0:
                 self._logger.info("Connection result '%s' ", mqtt.connack_string(rc))
-                self._mqtt_client.publish(topic=self._status_topic, payload=json.dumps(self._create_status_message("online")), qos=1, retain=False)
                 return
             self._logger.error("Connection result '%s': %s", str(rc), mqtt.connack_string(rc))
 
@@ -45,7 +56,7 @@ class MQTTSink(Observer):
                 self._logger.warning("Unexpected MQTT disconnection. Will auto-reconnect")
 
         self._mqtt_client = mqtt.Client(self._clientid)
-        self._mqtt_client.will_set(self._status_topic, payload=json.dumps(self._create_status_message("offline")), qos=1, retain=False)
+        self._mqtt_client.will_set(self._status_topic, payload=json.dumps(self._create_status_message(status="offline", status_text="LWT message")), qos=1, retain=False)
         self._mqtt_client.on_connect = on_connect
         self._mqtt_client.on_disconnect = on_disconnect
         self._mqtt_client.connect_async(self._host, self._port, 60)
@@ -55,27 +66,22 @@ class MQTTSink(Observer):
         self._logger.info("Disconnecting MQTT")
         if self._mqtt_client is None:
             return
-        self._mqtt_client.publish(topic=self._status_topic, payload=json.dumps(self._create_status_message("offline")), qos=1, retain=False)
+        self.submit(status="offline")
         self._mqtt_client.loop_stop()
         self._mqtt_client.disconnect()
         self._mqtt_client = None
 
-    def _submit(self, data):
-        self._ensure_connected()
-        payload = json.dumps(data)
-        self._logger.debug("Submitting value '%s' to '%s'", payload, self._data_topic)
-        self._mqtt_client.publish(topic=self._data_topic, payload=payload, qos=1, retain=False)
-
-    def _create_status_message(self, status_text):
+    def _create_status_message(self, *, status, status_text=None):
         currentmillis = int(round(time.time() * 1000))
         return {
-            "status": status_text,
+            "status": status,
+            "status_text": status_text,
             "timestamp": currentmillis, 
             "timestamp_str": datetime.datetime.utcfromtimestamp(currentmillis/1000).isoformat()
         }
-
+        
     def on_next(self, value):
-        self._submit(value)
+        self.submit_data(value)
 
     def on_completed(self):
         pass

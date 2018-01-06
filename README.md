@@ -65,7 +65,7 @@ Basic functionality:
 #### OBD2 
 The application is using the [Python obd](http://python-obd.readthedocs.io/en/latest/) internally, to read data from OBD2. The Pyton obd library is automatically searching for a proper serial device to connect to. Because of this there is no configuration for a serial device required.
 
-The Python obd library is using Pint's Quantity implementation for most return values. The Carberry application extracts value and unit if a Pint Quantity is used, otherwise the values returned by the Python obd library are currently just converted to strings. 
+The Python obd library is using Pint's Quantity implementation for most return values. The Carberry application extracts value and unit if a Pint Quantity is returned from Pyton obd, otherwise the values returned by the Python obd library are currently just converted to their string representation. 
 
 ### Configuration
 
@@ -253,6 +253,11 @@ WantedBy=multi-user.target
 Log outputs are written to `/var/log/syslog`.
 
 To view the logs run `sudo journalctl -u carberry` or `sudo journalctl -f -u carberry` to follow the logs.
+
+## What's missing?
+
+* Submitting configuration changes from the stationary side (e.g. change polling intervals, sensors to read)
+* Software updates on the Raspberry Pi 3
 
 ## Misc
 

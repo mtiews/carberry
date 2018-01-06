@@ -34,6 +34,8 @@ DEFAULT_CONFIGURATION = {
     },
     # Settings for OBD2 adapter - used for class OBD2Adapter
     "obd2": {
+        # A list of sensors read by the OBD2 adapter, as it is using http://python-obd.readthedocs.io/en/latest/
+        # internally, all sensors available via this library can be used here
         "sensors": [ 
             "ELM_VOLTAGE",
             "OIL_TEMP",
@@ -67,37 +69,45 @@ def parse_and_validate_config_string(config_as_string):
 if __name__ == "__main__":
     LOGGER.info("Starting module...")
 
-    # Loading configuration from file
-    LOGGER.info("Loading configuration file '%s'...", CONFIGURATION_FILE)
-    config_string = None
-    temp_config = None
-    try:
-        with open("config.json", "r") as f:
-            config_string = f.read()
-    except Exception as error:
-        LOGGER.error("Config file not found: %s", error)
-
-    # Parse and validate configuration loaded from file
-    temp_config = parse_and_validate_config_string(config_string)
-    if temp_config == None:
-        CONFIGURATION_IN_USE = DEFAULT_CONFIGURATION
-        LOGGER.warning("Using default configuration")
-    else:
-        CONFIGURATION_IN_USE = temp_config
-
-    LOGGER.info("Current configuration: %s", json.dumps(CONFIGURATION_IN_USE, indent=4))
-
-    # Initialize dependencies
+    # Initialize sink
     sink = MQTTSink(clientid=MQTT_CLIENT_NAME, topic_prefix=MQTT_TOPIC_PREFIX)
-    obd2 = OBD2Adapter(configuration=CONFIGURATION_IN_USE["obd2"])
-    gps = GPSAdapter(configuration=CONFIGURATION_IN_USE["gps"])
+    sink.submit_status(status="starting")
 
-    # Start data transfer     
-    dtrans = DataTransfer(mqtt_sink=sink, obd2_adapter=obd2, gps_adapter=gps)
-    dtrans.start(configuration=CONFIGURATION_IN_USE["general"])
+    try:
+        # Loading configuration from file
+        LOGGER.info("Loading configuration file '%s'...", CONFIGURATION_FILE)
+        config_string = None
+        temp_config = None
+        try:
+            with open("config.json", "r") as f:
+                config_string = f.read()
+        except Exception as error:
+            LOGGER.error("Config file not found: %s", error)
 
-    while 1:
-        time.sleep(10)
+        # Parse and validate configuration loaded from file
+        temp_config = parse_and_validate_config_string(config_string)
+        if temp_config == None:
+            CONFIGURATION_IN_USE = DEFAULT_CONFIGURATION
+            LOGGER.warning("Using default configuration")
+        else:
+            CONFIGURATION_IN_USE = temp_config
 
-    LOGGER.info("...done")
+        LOGGER.info("Current configuration: %s", json.dumps(CONFIGURATION_IN_USE, indent=4))
+
+        obd2 = OBD2Adapter(configuration=CONFIGURATION_IN_USE["obd2"])
+        gps = GPSAdapter(configuration=CONFIGURATION_IN_USE["gps"])
+
+        # Start data transfer     
+        dtrans = DataTransfer(mqtt_sink=sink, obd2_adapter=obd2, gps_adapter=gps)
+        dtrans.start(configuration=CONFIGURATION_IN_USE["general"])
+
+        sink.submit_status(status="online", status_text="Application bootstrapped successfully.")
+
+        while 1:
+            time.sleep(10)
+
+    except Exception as ex:
+        sink.submit(status="error", status_message=str(ex))
+
+    LOGGER.info("...module exited")
     
