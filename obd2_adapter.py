@@ -53,7 +53,7 @@ class OBD2Adapter:
             if not result.is_null():
                 try:
                     svalue = result.value.magnitude
-                    sunit = result.value.unit
+                    sunit = str(result.value.units)
                 except AttributeError:
                     svalue = str(result.value)
             return self._create_sensor_data_message(sensor_name=sensor_name, value=svalue, unit=sunit)

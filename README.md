@@ -120,6 +120,8 @@ Add the following line to `/etc/rc.local`:
 to enable the serial port automatically during startup.
 Not nice, but all other solutions didn't work. :-(
 
+Add
+
 ### Test OBD2 Bluetooth Dongle
 
 Install screen `sudo apt-get install screen`
@@ -225,6 +227,7 @@ After these steps the application can be started via `python3 main.py`, to check
 #### Run Carberry as service using systemd
 
 1. Create a user: `sudo useradd -r -s /bin/false carberry`
+2. Add the user to the `dialout` group, to allow accessing the `/dev/rfcomm0` (where the OBD2 Bluetooth Dongle is bind to): `sudo usermod -a -G dialout carberry`
 2. Create a config file for systemd: `sudo nano /etc/systemd/system/carberry.service`
 3. Paste the following content into the file:
 ```

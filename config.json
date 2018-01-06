@@ -7,8 +7,6 @@
     },
     "obd2": {
         "sensors": [
-            "ELM_VOLTAGE",
-            "OIL_TEMP",
             "RPM",
             "SPEED"
         ]

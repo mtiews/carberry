@@ -37,8 +37,6 @@ DEFAULT_CONFIGURATION = {
         # A list of sensors read by the OBD2 adapter, as it is using http://python-obd.readthedocs.io/en/latest/
         # internally, all sensors available via this library can be used here
         "sensors": [ 
-            "ELM_VOLTAGE",
-            "OIL_TEMP",
             "RPM",
             "SPEED"
         ]
