@@ -19,14 +19,19 @@ Usage data will be split according to the `source` field in the submitted JSON d
 Status data will be put here:
 * `carberry/status/` + `Firehose specific suffix`
 
+Heartbeat here:
+* `carberry/heartbeat/` + `Firehose specific suffix`
+
+
 For each prefix a separate Firehose delivery stream has to be created, which all point to the `smartcar-<accountId>` bucket.
 
 To reduce the amount of stored data and costs for AWS Athena (pricing is based on the size of bytes parsed per query execution) I select `GZIP` for the S3 compression option.
 
 After this step we have three Firehose delivery streams, one for each prefix:
 * Stream `carberry-data-obd2` pointing to bucket `smartcar-<accountId>` with prefix `carberry/data/obd2/`
-* Stream `carberry-data-obd2` pointing to bucket `smartcar-<accountId>` with prefix `carberry/data/gps/`
-* Stream `carberry-data-obd2` pointing to bucket `smartcar-<accountId>` with prefix `carberry/status/`
+* Stream `carberry-data-gps` pointing to bucket `smartcar-<accountId>` with prefix `carberry/data/gps/`
+* Stream `carberry-status` pointing to bucket `smartcar-<accountId>` with prefix `carberry/status/`
+* Stream `carberry-heartbeat` pointing to bucket `smartcar-<accountId>` with prefix `carberry/heartbeat/`
 
 ...which are waiting waiting to receive their data from AWS IoT Core...
 
@@ -40,18 +45,23 @@ We are using the following statements, to feed the data in the appropriate AWS K
 
 For `carberry-data-obd2`:
 ```
-SELECT * as data, timestamp as timestamp, clientid() as clientid, topic() as topic, timestamp() as received FROM 'carberry/+/data' WHERE source = 'obd2'
-````
+SELECT * as data, clientid() as clientid, topic() as topic, timestamp() as receivedts FROM 'carberry/+/data' WHERE source = 'obd2'
+```
 
 For `carberry-data-gps`:
 ```
-SELECT * as data, timestamp as timestamp, clientid() as clientid, topic() as topic, timestamp() as received FROM 'carberry/+/data' WHERE source = 'gps'
-````
+SELECT * as data, clientid() as clientid, topic() as topic, timestamp() as receivedts FROM 'carberry/+/data' WHERE source = 'gps'
+```
 
 For `carberry-status`:
 ```
-SELECT * as data, timestamp as timestamp, clientid() as clientid, topic() as topic, timestamp() as received FROM 'carberry/+/status'
-````
+SELECT * as data, clientid() as clientid, topic() as topic, timestamp() as receivedts FROM 'carberry/+/status'
+```
+
+For `carberry-heartbeat`:
+```
+SELECT * as data, clientid() as clientid, topic() as topic, timestamp() as receivedts FROM 'carberry/+/status'
+```
 
 ## What's missing?
 
@@ -59,4 +69,4 @@ AWS offers a lot of services, many of them derived and if you have a closer look
 
 But one thing is - at the time of writing - missing, a very important feature for performance improvements and cost reduction. That's an "AWS native" way to create proper partitions using native AWS Services for your "Big Data" stored in AWS S3. 
 
-We can persist the data using AWS Kinesis Firehose on AWS S3 quite simple...ETL the data via AWS Glue...create SQL-like access to the data via AWS Athena...hopefully create insights using AWS Quicksight...but to partition your data, we have to implement custom functionality? Ok, there are some AWS documents describing the approach, but - at least from my point of view - it breaks the "A Business Analyst can Setup the hole Story from Data to Analytical Insights..."
+We can persist the data using AWS Kinesis Firehose on AWS S3 quite simple...ETL the data via AWS Glue...create SQL-like access to the data via AWS Athena...hopefully create insights using AWS Quicksight...but to partition your data, we have to implement custom functionality? Ok, there are some AWS documents describing the approach, but - at least from my point of view - it breaks the "A Business Analyst can Setup the hole Story from Data to Analytical Insights..." story.

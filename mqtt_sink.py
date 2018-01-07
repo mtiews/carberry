@@ -26,7 +26,12 @@ class MQTTSink(Observer):
 
     def heartbeat(self):
         self._ensure_connected()
-        self._mqtt_client.publish(topic=self._heartbeat_topic, payload=json.dumps({"timestamp": datetime.datetime.utcnow().isoformat()}), qos=1, retain=False)
+        currentmillis = int(round(time.time() * 1000))
+        payload = json.dumps({
+                "timestamp": currentmillis, 
+                "timestamp_str": datetime.datetime.utcfromtimestamp(currentmillis/1000).isoformat()
+            })
+        self._mqtt_client.publish(topic=self._heartbeat_topic, payload=payload, qos=1, retain=False)
 
     def submit_data(self, data):
         self._ensure_connected()
@@ -66,7 +71,7 @@ class MQTTSink(Observer):
         self._logger.info("Disconnecting MQTT")
         if self._mqtt_client is None:
             return
-        self.submit(status="offline")
+        self.submit_status(status="offline")
         self._mqtt_client.loop_stop()
         self._mqtt_client.disconnect()
         self._mqtt_client = None

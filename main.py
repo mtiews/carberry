@@ -26,7 +26,7 @@ DEFAULT_CONFIGURATION = {
     # General settings - used for class DataTransfer
     "general" : {
         # Interval in seconds
-        "heartbeat_interval": 300,
+        "heartbeat_interval": 60,
         # Interval in seconds
         "obd2_poll_interval": 60,
         # Interval in seconds

@@ -1,7 +1,7 @@
 {
     "config_info": "Configuration from config.json",
     "general" : {
-        "heartbeat_interval": 300,
+        "heartbeat_interval": 60,
         "obd2_poll_interval": 60,
         "gps_poll_interval": 60
     },
