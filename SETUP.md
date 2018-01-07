@@ -135,6 +135,8 @@ bridge_certfile /etc/mosquitto/certs/certificate.pem.crt
 bridge_keyfile /etc/mosquitto/certs/private.pem.key
 ```
 
+**Important: If you have multiple instances of Carberry installations, the `clientid` used in the bridge configuration has to be different! As AWS will disconnect other clients if they are using the same clientid!**
+
 ## Install Carberry application software
 
 ### Installation steps

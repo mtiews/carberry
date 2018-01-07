@@ -44,6 +44,7 @@ class DataTransfer:
         # Heartbeat
         self._heartbeat_subscription = \
             Observable.interval(configuration["heartbeat_interval"] * 1000) \
+                .start_with(0) \
                 .map(lambda s: self._sink.heartbeat()) \
                 .do_action(PipelineLog('heartbeat')) \
                 .retry() \
@@ -51,6 +52,7 @@ class DataTransfer:
         # OBD2
         self._obd2_subscription = \
             Observable.interval(configuration["obd2_poll_interval"] * 1000) \
+                .start_with(0) \
                 .map(lambda s: self._obd2.read_sensors()) \
                 .flat_map(lambda l: Observable.from_(l)) \
                 .do_action(PipelineLog('obd2')) \
@@ -59,6 +61,7 @@ class DataTransfer:
         # GPS
         self._gps_subscription = \
             Observable.interval(configuration["gps_poll_interval"] * 1000) \
+                .start_with(0) \
                 .map(lambda s: self._gps.read_gps()) \
                 .do_action(PipelineLog('gps')) \
                 .retry() \
