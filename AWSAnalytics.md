@@ -63,6 +63,27 @@ For `carberry-heartbeat`:
 SELECT * as data, clientid() as clientid, topic() as topic, timestamp() as receivedts FROM 'carberry/+/status'
 ```
 
+## Create Database and Tables in AWS Athena to access data persisted in S3
+
+Via AWS Athena tables can be created, based on the data stored in S3.
+
+Heartbeat:
+```
+CREATE EXTERNAL TABLE IF NOT EXISTS carberrydb.rd_carberry_heartbeat (
+    `receivedts` bigint,
+    `clientid` string,
+    `data` struct<
+        `timestamp`:bigint,
+        `timestamp_str`:string,
+    > 
+)
+ROW FORMAT SERDE 'org.openx.data.jsonserde.JsonSerDe'
+WITH SERDEPROPERTIES (
+  'serialization.format' = '1'
+) LOCATION 's3://smartcar-223269283481/carberry/heartbeat/'
+TBLPROPERTIES ('has_encrypted_data'='false');
+```
+
 ## What's missing?
 
 AWS offers a lot of services, many of them derived and if you have a closer look at the details directly based on frameworks and tools from the Hadoop ecosystem, Presto, etc.

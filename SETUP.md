@@ -160,7 +160,7 @@ After these steps the application can be started via `python3 main.py`, to check
 ```
 [Unit]
 Description=Carberry Application Service
-After=syslog.target
+After=syslog.target mosquitto.service
 
 [Service]
 Type=simple

@@ -64,7 +64,7 @@ class MQTTSink(Observer):
         self._mqtt_client.will_set(self._status_topic, payload=json.dumps(self._create_status_message(status="offline", status_text="LWT message")), qos=1, retain=False)
         self._mqtt_client.on_connect = on_connect
         self._mqtt_client.on_disconnect = on_disconnect
-        self._mqtt_client.connect_async(self._host, self._port, 60)
+        self._mqtt_client.connect(self._host, self._port, 60)
         self._mqtt_client.loop_start()
 
     def _uninit_mqttclient(self):
