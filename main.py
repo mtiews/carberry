@@ -99,7 +99,7 @@ if __name__ == "__main__":
         dtrans = DataTransfer(mqtt_sink=sink, obd2_adapter=obd2, gps_adapter=gps)
         dtrans.start(configuration=CONFIGURATION_IN_USE["general"])
 
-        sink.submit_status(status="online", status_text="Application bootstrapped successfully.")
+        sink.submit_status(status="running", status_text="Application bootstrapped successfully.")
 
         while 1:
             time.sleep(10)
