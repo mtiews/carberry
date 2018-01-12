@@ -26,11 +26,9 @@ DEFAULT_CONFIGURATION = {
     # General settings - used for class DataTransfer
     "general" : {
         # Interval in seconds
-        "heartbeat_interval": 60,
+        "obd2_poll_interval": 30,
         # Interval in seconds
-        "obd2_poll_interval": 60,
-        # Interval in seconds
-        "gps_poll_interval": 60
+        "gps_poll_interval": 30
     },
     # Settings for OBD2 adapter - used for class OBD2Adapter
     "obd2": {

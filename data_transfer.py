@@ -21,7 +21,6 @@ class DataTransfer:
         self._logger = logging.getLogger(__name__)
         self._sink = mqtt_sink
         self._initialized = False
-        self._heartbeat_subscription = None
         self._obd2 = obd2_adapter
         self._obd2_subscription = None
         self._gps = gps_adapter
@@ -41,14 +40,6 @@ class DataTransfer:
             return
 
         self._logger.info("Starting Pipelines")
-        # Heartbeat
-        self._heartbeat_subscription = \
-            Observable.interval(configuration["heartbeat_interval"] * 1000) \
-                .start_with(0) \
-                .map(lambda s: self._sink.heartbeat()) \
-                .do_action(PipelineLog('heartbeat')) \
-                .retry() \
-                .subscribe(on_next=lambda i: i) # nothing to do here
         # OBD2
         self._obd2_subscription = \
             Observable.interval(configuration["obd2_poll_interval"] * 1000) \
@@ -72,8 +63,6 @@ class DataTransfer:
         self._logger.info("Stopping Pipelines")
         if self._obd2_subscription != None:
             self._obd2_subscription.dispose()
-        if self._heartbeat_subscription != None:
-            self._heartbeat_subscription.dispose()
         if self._gps_subscription != None:
             self._gps_subscription.dispose()
         self._initialized = False
@@ -83,12 +72,12 @@ if __name__ == "__main__":
     import time 
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
 
-    mqtt = type("", (object,), { "initialize": lambda: print("mqtt_initialize"), "heartbeat": lambda: print("mqtt_heartbeat"), "on_next": lambda d: print("mqtt_on_next > " + str(d))})
+    mqtt = type("", (object,), { "initialize": lambda: print("mqtt_initialize"), "on_next": lambda d: print("mqtt_on_next > " + str(d))})
     obd2 = type("", (object,), { "read_sensors": lambda: ["read_sensors_result1", "read_sensors_result2"]})
     gps = type("", (object,), { "read_gps": lambda: "read_gps_result"})
     dt = DataTransfer(mqtt_sink=mqtt, obd2_adapter=obd2, gps_adapter=gps)
     
-    config = { "heartbeat_interval": 1, "obd2_poll_interval": 1, "gps_poll_interval": 1}
+    config = { "obd2_poll_interval": 1, "gps_poll_interval": 1}
     dt.start(configuration=config)
     time.sleep(3)
     dt.stop()

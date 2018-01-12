@@ -16,6 +16,31 @@ ATTRS{idVendor}=="12d1", ATTRS{idProduct}=="1f01", RUN+="/usr/sbin/usb_modeswitc
 ```
 to the file `/lib/udev/rules.d/40-usb_modeswitch.rules`.
 
+## Install GPS Module
+
+The GPS Module will be connect via serial port (connect to GPIO14 / GPIO15 of the Raspberry Pi 3 header).
+
+On the Raspberry 3 Pi by default the UART0 is used for the internal Bluetooth module and can not be used for the serial port (on the header).
+
+So some steps have to be done, to configure the serial port properly:
+1. Enable serial port and disable serial console via `raspi-config`
+2. Remove `console=serial0,115200` from `/boot/cmdline.txt`
+3. Add the following lines to the end of `/boot/config.txt`
+```
+dtoverlay=pi3-miniuart-bt
+enable_uart=1
+core_freq=250
+```
+4. Restart Raspberry
+
+Details about reconfiguring the serial ports can be found here: https://wiki.fhem.de/wiki/Raspberry_Pi_3:_GPIO-Port_Module_und_Bluetooth
+
+After the serial ports are setup properly, follow these steps to setup the GPS Module:
+1. Install the required GPS packages: `sudo apt-get install gpsd gpsd-clients`
+2. Check whether GPS data available via serial port: `cat /dev/ttyAMA0``
+3. To configure gpsd to use the proper serial port run `sudo nano /etc/default/gpsd`and a change `DEVICES=""` to `DEVICES="/dev/ttyAMA0"`
+4. Run `cgps` to check if the GPS Module is working.
+
 ## Connect OBD2 Bluetooth Dongle
 
 Start `bluetoothctl`, and enter the following commands:
@@ -44,8 +69,6 @@ Add the following line to `/etc/rc.local`:
 ```
 to enable the serial port automatically during startup.
 Not nice, but all other solutions didn't work. :-(
-
-Add
 
 ## Test OBD2 Bluetooth Dongle
 
@@ -88,6 +111,9 @@ Run the following command to install Mosquitto: `sudo apt-get install -y mosquit
 After the installation the MQTT broker should be running.
 
 To validate, if mosquitto is running execute `mosquitto_sub -t "#"` in one terminal to subscribe to all topics. And in another terminal run `mosquitto_pub -t "greetings" -m "hello"`. After publishing the message `hello`should appear in the first terminal.
+
+Update the persistence settings in Mosquitto's config file `/etc/mosquitto/mosquitto.conf` according to your needs. As by default Mosquitto only persists its subscription / messages etc. when exiting, data may be lost when the Raspberry Pi 3 is "switched off" (e.g. when connected via 12V USB adapter which will be switched of when you leave your car).
+For example add the line `autosave_interval 60` to automatically persist data to disk every 60 seconds.
 
 UPDATE: It looks like Raspian jessie references a very old version of mosquitto, which does not support the latest MQTT protocol (3.1.1) required for AWS IoT. 
 So an update is required, see description at http://agilerule.blogspot.de/2016/05/install-mqtt-mosquitto-on-raspberry-pi.html.

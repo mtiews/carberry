@@ -16,7 +16,7 @@ Used hardware:
 * Raspberry Pi 3
 * Huawei e3372 LTE USB Stick
 * Exza HHOBD Bluetooth Dongle (ELM327 compatible)
-* [GPS Receiver]
+* NEO 6M GPS (with serial interface)
 
 Used software: 
 * Vehicle

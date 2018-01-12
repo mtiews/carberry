@@ -13,7 +13,6 @@ the topics on the stationary side may vary.
 The application exposes its data to the following three topics:
 
 * `carberry/status` - status messages during the application lifecycle
-* `carberry/heartbeat` - heartbeat message sent by the application in configurable intervals
 * `carberry/data` - usage data like OBD2 sensor values and GPS data will be sent using this topic.
 
 ## Status topic - `carberry/status`
@@ -32,17 +31,6 @@ Sample message:
 }
 ```
 
-## Heartbeat topic - `carberry/heartbeat`
-
-Simple heartbeat message sent by the application in configurable intervals.
-
-Sample message:
-```
-{
-    "timestamp": "2018-01-06T16:11:49.462340"
-}
-```
-
 ## Data topic - `carberry/data`
 
 All usage data messages will be sent using this topic.
@@ -50,6 +38,7 @@ All usage data messages will be sent using this topic.
 Messages of this topic contain a `source` field to identify their source / type of message.
 
 ### OBD2
+
 ```
 {
     "source": "obd2",
@@ -64,15 +53,31 @@ Messages of this topic contain a `source` field to identify their source / type 
 
 ### GPS
 
+The gps `value` reflects the record type TPV documented here: http://www.catb.org/gpsd/gpsd_json.html 
+
 ```
 {
     "source": "gps",
+    "timestamp_str": "2018-01-12T22:07:21.786000", 
+    "timestamp": 1515794841786,
     "value": {
-        "longitude": 24.24,
-        "latitude": 12.12
-    },
-    "timestamp": 1515255178291,
-    "timestamp_str": "2018-01-06T16:12:58.290999",
-    "error": null
+        "track": 0.0, 
+        "epv": 25.3, 
+        "epy": 12.6, 
+        "alt": 319.4, 
+        "epx": 9.7, 
+        "tag": "GBS", 
+        "time": "2018-01-12T22:07:21.000Z", 
+        "epd": "n/a", 
+        "device": "/dev/ttyAMA0", 
+        "lat": 48.000000, 
+        "climb": 0.0, 
+        "eps": 27.41, 
+        "speed": 0.137, 
+        "lon": 11.000000, 
+        "ept": 0.005, 
+        "mode": 3, 
+        "epc": "n/a"
+    }, 
 }
 ```

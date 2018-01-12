@@ -13,7 +13,6 @@ class MQTTSink(Observer):
         self._host = host
         self._port = port
         self._clientid = clientid
-        self._heartbeat_topic = topic_prefix + "/heartbeat"
         self._status_topic = topic_prefix + "/status"
         self._data_topic = topic_prefix + "/data"
         self._mqtt_client = None
@@ -23,15 +22,6 @@ class MQTTSink(Observer):
 
     def dispose(self):
         self._uninit_mqttclient()
-
-    def heartbeat(self):
-        self._ensure_connected()
-        currentmillis = int(round(time.time() * 1000))
-        payload = json.dumps({
-                "timestamp": currentmillis, 
-                "timestamp_str": datetime.datetime.utcfromtimestamp(currentmillis/1000).isoformat()
-            })
-        self._mqtt_client.publish(topic=self._heartbeat_topic, payload=payload, qos=1, retain=False)
 
     def submit_data(self, data):
         self._ensure_connected()
@@ -100,13 +90,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s")
 
     sink = MQTTSink(clientid="mqttsink_test", topic_prefix="mqttsink_test")
-    sink.heartbeat()
-
+    
     sink.on_next({"sensor": "sensor1", "value": 1000})
     sink.on_next({"sensor": "sensor1", "value": 1000})
     sink.on_completed()
     sink.on_error("Something went wrong")
-    sink.heartbeat()
-
+    
     time.sleep(3)
     sink.dispose()
